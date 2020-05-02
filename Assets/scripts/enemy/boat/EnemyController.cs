@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    public GameObject SparklerPrefab;
-
     private Rigidbody2D gameObjectRigidBody;
     private Animator animator;
-    
+
+    private const string sparklerTag = "Sparkler";
+
     public int raveMemberCount;
 
     [Range(20f, 50f)]
@@ -141,7 +141,7 @@ public class EnemyController : MonoBehaviour
         {
             // Create an object in the world that doesn't have physics collision, just collision with the player to get a remember from them
             //Debug.Log("Threw an attractor toward the rave boat!");
-            GameObject sparkler = Instantiate(SparklerPrefab, transform.position, Quaternion.identity);
+            GameObject sparkler = ObjectPooler.Instance.SpawnFromPool(sparklerTag, transform.position);
 
             // Calculate Force we should move object toward a given position
             Vector3 directionToThrow = GetDirectionFromCurrentObjectToTargetObject(gameObjectRigidBody, collisionObject);

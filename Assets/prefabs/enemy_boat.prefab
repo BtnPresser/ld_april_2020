@@ -54,7 +54,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 30811b2058d65b246800eebde7b03c6e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -190,8 +190,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a887299f79820034f9b691fdcfbad7e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SparklerPrefab: {fileID: 4795022201687736953, guid: 2708394886d8c2b48aa9b1b3663f0df3,
-    type: 3}
   raveMemberCount: 0
   throwingForce: 35
   timeBetweenSparklers: 1.5

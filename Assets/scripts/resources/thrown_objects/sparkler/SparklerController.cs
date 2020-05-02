@@ -71,7 +71,8 @@ public class SparklerController : MonoBehaviour
     {
         if (timeSinceCreated >= sparklerLifetimeSeconds)
         {
-            Destroy(gameObject);
+            timeSinceCreated = 0;
+            gameObject.SetActive(false);
         }
     }
 
