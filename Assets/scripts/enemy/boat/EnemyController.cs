@@ -1,14 +1,9 @@
 ﻿using System;
 using UnityEngine;
 
-public class EnemyController : MonoBehaviour
+public class EnemyController : AbsBoatMovementController
 {
-    private Rigidbody2D gameObjectRigidBody;
-    private Animator animator;
-
     private const string sparklerTag = "Sparkler";
-
-    public int raveMemberCount;
 
     [Range(20f, 50f)]
     public float throwingForce = 35f;
@@ -17,14 +12,7 @@ public class EnemyController : MonoBehaviour
     public float timeBetweenSparklers = 0.5f;
     private float lastSparklerThrownTime = 0;
 
-    [Range(0.01f, 20f)]
-    public float speed = 10f;
-    [Range(0.0f, 6f)]
-    public float maxMagnitude = 1f;
     public float sprintMagnitudeMultiplier = 1.3f;
-    
-    private float defaultMaxMagnitude;
-    private float sprintMagnitude;
 
 
     [Range(1, 5)]
@@ -44,18 +32,13 @@ public class EnemyController : MonoBehaviour
         gameObjectRigidBody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
 
-        defaultMaxMagnitude = maxMagnitude;
-        sprintMagnitude = maxMagnitude * sprintMagnitudeMultiplier;
+        maxMagnitude = 1f;
+        speed = 10f;
 
         if (randomTimeBetweeenActions) 
         {
             timeBetweenActions = UnityEngine.Random.Range(1f, 3f);
         }
-    }
-
-    public void Update()
-    { 
-        UpdateAnimationBasedOnRigidBodySpeed(animator, gameObjectRigidBody);
     }
 
     private void FixedUpdate()
@@ -83,6 +66,11 @@ public class EnemyController : MonoBehaviour
         {
             Wander(gameObjectRigidBody);
         }
+    }
+
+    protected override void MoveGameObjectRigidBody(Rigidbody2D gameObjectBody)
+    {
+
     }
 
 
@@ -121,7 +109,7 @@ public class EnemyController : MonoBehaviour
 
         if (exceedMaxMagnitude(gameObjectBody))
         {
-            dampenRigidBodyVelocity(gameObjectBody);
+            DampenRigidBodyVelocity(gameObjectBody);
         }
     }
 
@@ -163,11 +151,9 @@ public class EnemyController : MonoBehaviour
     }
 
     // Add a force in a random direction
-    private void Wander(Rigidbody2D gameObjectBody)
+    protected override void Wander(Rigidbody2D gameObjectRigidBody)
     {
-        float xMove = (UnityEngine.Random.Range(0f, 1f) > 0.5f ? 1 : -1) * speed;
-        float yMove = (UnityEngine.Random.Range(0f, 1f) > 0.5f ? 1 : -1) * speed;
-        AddForceToRigidBody(new Vector2(xMove, yMove), gameObjectBody);
+        base.Wander(gameObjectRigidBody);
         TookAction();
     }
 
@@ -190,10 +176,9 @@ public class EnemyController : MonoBehaviour
         TookAction();
     }
 
-    private static Vector3 GetDirectionFromCurrentObjectToTargetObject(Rigidbody2D gameObjectRigidBody, GameObject targetObject)
+    private Vector3 GetDirectionFromCurrentObjectToTargetObject(Rigidbody2D gameObjectRigidBody, GameObject targetObject)
     {
         Vector3 targetObjectPosition = targetObject.transform.position;
-
 
         //Vector3 positionToMoveTo = Vector3.MoveTowards(gameObjectRigidBody.transform.position, targetObjectPosition, speed/2);
         //Debug.Log("Force to move the ai towards the play: " + positionToMoveTo + "\n" + "Target Direction: " + targetDirection);
@@ -205,69 +190,6 @@ public class EnemyController : MonoBehaviour
     {
         AddForceToRigidBody(forceToApply, objectToThrow.GetComponent<Rigidbody2D>());
     }
-
-    private void AddForceToRigidBody(Vector3 newForce, Rigidbody2D gameObjectRigidBody)
-    {
-        gameObjectRigidBody.AddForce(newForce);
-    }
-
-    private void dampenRigidBodyVelocity(Rigidbody2D gameObjectRigidBody)
-    {
-        Vector2 velocity = gameObjectRigidBody.velocity;
-        float magnitude = velocity.magnitude;
-        float exceedMaagnitudeAmount = maxMagnitude - magnitude;
-
-        gameObjectRigidBody.AddForce(velocity * -1 * magnitude);
-    }
-
-    private bool exceedMaxMagnitude(Rigidbody2D gameObjectRigidBody)
-    {
-        return gameObjectRigidBody.velocity.magnitude > maxMagnitude;
-    }
-
-    private void UpdateAnimationBasedOnRigidBodySpeed(Animator animator, Rigidbody2D gameObjectRigidBody)
-    {
-        Vector2 velocity = gameObjectRigidBody.velocity;
-        float xSpeed = velocity.x;
-        float ySpeed = velocity.y;
-
-        // We only want to update the booleans if the new velocity is not zero. The player should maintain the current animation otherwise
-        if (xSpeed != 0f && ySpeed != 0f)
-        {
-            bool posXSpeed = xSpeed > 0;
-            bool posYSpeed = ySpeed > 0;
-            bool xSpeedGreaterThanY = Mathf.Abs(xSpeed) > Mathf.Abs(ySpeed);
-
-            //logNewAnimationBools(posXSpeed, posYSpeed, xSpeedGreaterThanY);
-            //logAnimatorBools();
-
-            animator.SetBool("PosXDir", posXSpeed);
-            animator.SetBool("PosYDir", posYSpeed);
-            animator.SetBool("GreaterXSpeed", xSpeedGreaterThanY);
-        }
-
-    }
-
-    private static void logNewAnimationBools(bool posXSpeed, bool posYSpeed, bool xSpeedGreaterThanY)
-    {
-
-        // For checking what the various bools we're about to set are
-        Debug.Log("posXSpeed: " + posXSpeed + "\n" +
-            "posYSpeed: " + posYSpeed + "\n" +
-            "xSpeedGreaterThanY: " + xSpeedGreaterThanY);
-    }
-
-    private void logAnimatorBools()
-    {
-        // For checking whether the animator updated the variables or not
-        bool animatorXDir = animator.GetBool("PosXDir");
-        bool animatorYDir = animator.GetBool("PosYDir");
-        bool animatorXGreater = animator.GetBool("GreaterXSpeed");
-        Debug.Log("PosXDir: " + animatorXDir + "\n" +
-            "PosYDir: " + animatorYDir + "\n" +
-            "GreaterXSpeed: " + animatorXGreater + "\n");
-    }
-
 
     // Need to make some logic for how th ai deals with players
     /*
@@ -286,7 +208,8 @@ public class EnemyController : MonoBehaviour
             if (playerInCollider && raveBoatInCollider)
             {
                 // This state is gravy if I have time
-                return MovementState.ActualThoughtfulDecision;
+                //return MovementState.ActualThoughtfulDecision;
+                return MovementState.DistractRaveBoats;
             }
             else if (raveBoatInCollider)
             {
@@ -296,6 +219,7 @@ public class EnemyController : MonoBehaviour
             {
                 return MovementState.MoveAwayFromPlayer;
             }
+
             return MovementState.Wander;
         }
     }

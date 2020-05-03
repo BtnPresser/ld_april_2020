@@ -2711,12 +2711,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 455f802be09adf047aaa72ffaf46ff59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  floatingText: {fileID: 6239063179012161895, guid: d6b6b4092d4c7ee40b3458ccab414998,
-    type: 3}
   speed: 10
   maxMagnitude: 2
   raveMemberCount: 0
-  maxRaveMembers: 10
+  maxRaveMemberCount: 10
+  floatingText: {fileID: 6239063179012161895, guid: d6b6b4092d4c7ee40b3458ccab414998,
+    type: 3}
   sprintMagnitudeMultiplier: 1.5
 --- !u!50 &1597243079
 Rigidbody2D:

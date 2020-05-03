@@ -2,26 +2,16 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : AbsBoatMovementController
 {
-    private Rigidbody2D gameObjectRigidBody;
-    private Animator animator;
-
     public GameObject floatingText;
 
-    [Range(0.01f, 20f)]
-    public float speed = 10f;
-    [Range(0.0f, 6f)]
-    public float maxMagnitude = 2f;
-    private float defaultMaxMagnitude;
-    public int raveMemberCount = 0;
-    public int maxRaveMembers = 10;
-
-
     private Keyboard kb;
-    
-    private float sprintMagnitude;
+
+    private float calculatedSprintMagnitude;
     public float sprintMagnitudeMultiplier = 1.5f;
+    
+    private float originalMaxMagnitude;
 
     // Setup the Player
     private void Awake()
@@ -31,15 +21,20 @@ public class PlayerController : MonoBehaviour
 
         kb = InputSystem.GetDevice<Keyboard>();
 
-        defaultMaxMagnitude = maxMagnitude;
-        sprintMagnitude = maxMagnitude * sprintMagnitudeMultiplier;
+        speed = 10f;
+
+        raveMemberCount = 0;
+        maxRaveMemberCount = 10;
+
+        maxMagnitude = 2f;
+
+        originalMaxMagnitude = maxMagnitude;
+        calculatedSprintMagnitude = maxMagnitude * sprintMagnitudeMultiplier;
     }
 
     public void FixedUpdate()
     {
         MoveGameObjectRigidBody(gameObjectRigidBody);
-
-        UpdatePlayerAnimationsBasedOnSpeed(animator, gameObjectRigidBody);
     }
 
     private void OnTriggerEnter2D(UnityEngine.Collider2D collision)
@@ -52,16 +47,16 @@ public class PlayerController : MonoBehaviour
             // It would be nice if RaveBoat was split into a classes where one represents their data and the other represents the controller
             RaveBoatController raveBoatController = collision.gameObject.GetComponent<RaveBoatController>();
             int raveBoatMemberCount = raveBoatController.raveMemberCount;
-            if (raveMemberCount >= maxRaveMembers)
+            if (raveMemberCount >= maxRaveMemberCount)
             {
                 ShowFloatingText("Max Ravers!");
-                raveMemberCount = maxRaveMembers; // In quick collisions, we can run over the max and then overflow into negatives
+                raveMemberCount = maxRaveMemberCount; // In quick collisions, we can run over the max and then overflow into negatives
             }
             else
             {
-                if ((raveMemberCount + raveBoatMemberCount) > maxRaveMembers)
+                if ((raveMemberCount + raveBoatMemberCount) > maxRaveMemberCount)
                 {
-                    int maxRaversPlayerCanAcquire = maxRaveMembers - raveMemberCount;
+                    int maxRaversPlayerCanAcquire = maxRaveMemberCount - raveMemberCount;
                     raveMemberCount += maxRaversPlayerCanAcquire;
 
                     raveBoatController.raveMemberCount = raveBoatMemberCount - maxRaversPlayerCanAcquire;
@@ -94,109 +89,66 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    private void MoveGameObjectRigidBody(Rigidbody2D gameObjectBody)
+    protected override void MoveGameObjectRigidBody(Rigidbody2D gameObjectBody)
     {
-        Vector2 newForce = new Vector2(0, 0);
+        Vector2 newForce = new Vector2(GetXKeyDown(), GetYKeyDown());
+        CheckSprintKey();
 
-        if (kb.wKey.IsPressed())
-        {
-            newForce.y = 1 * speed;
-        }
-        else if (kb.sKey.IsPressed())
-        {
-            newForce.y = -1 * speed;
-        }
-
-        if (kb.dKey.IsPressed())
-        {
-            newForce.x = 1 * speed;
-        }
-        else if (kb.aKey.IsPressed())
-        {
-            newForce.x = -1 * speed;
-        }
-
-        if (kb.spaceKey.IsPressed())
-        {
-            maxMagnitude = sprintMagnitude;
-        } else
-        {
-            maxMagnitude = defaultMaxMagnitude;
-        }
-
-        float playerMagnitude = gameObjectBody.velocity.magnitude;
-        /*Debug.Log("Current Velocity Is: " + (playerBody.velocity) + "\n" +
-            "Current Magnitude Is :" + playerMagnitude);*/
+        /*float playerMagnitude = gameObjectBody.velocity.magnitude;
+        Debug.Log("Current Velocity Is: " + (gameObjectBody.velocity) + "\n" +
+            "Current Magnitude Is :" + playerMagnitude + "\n" +
+            "Current new force is: " + newForce);*/
+        /*Debug.Log("New Force is: " + newForce);*/
 
         if (exceedMaxMagnitude(gameObjectBody))
         {
-            dampenRigidBodyVelocity(gameObjectBody);
-        } else
+            DampenRigidBodyVelocity(gameObjectBody);
+        }
+        else/* if (!newForce.Equals(Vector2.zero))*/
         {
-            AddForceToRigidBody(newForce, gameObjectRigidBody);
+            AddForceToRigidBody(newForce, gameObjectBody);
+            Debug.Log("Player Velocity is now: " + gameObjectBody.velocity);
         }
     }
 
-    private void AddForceToRigidBody(Vector2 newForce, Rigidbody2D gameObjectRigidBody)
+    private float GetYKeyDown()
     {
-        gameObjectRigidBody.AddForce(newForce);
-    }
-
-    private void dampenRigidBodyVelocity(Rigidbody2D gameObjectRigidBody)
-    {
-        Vector2 velocity = gameObjectRigidBody.velocity;
-        float magnitude = velocity.magnitude;
-        float exceedMaagnitudeAmount = maxMagnitude - magnitude;
-
-        gameObjectRigidBody.AddForce(velocity * -1 * magnitude);
-    }
-
-    private bool exceedMaxMagnitude(Rigidbody2D gameObjectRigidBody)
-    {
-        return gameObjectRigidBody.velocity.magnitude > maxMagnitude;
-    }
-
-    private void UpdatePlayerAnimationsBasedOnSpeed(Animator animator, Rigidbody2D gameObjectRigidBody)
-    {
-        Vector2 newVelocity = gameObjectRigidBody.velocity;
-        float newXSpeed = newVelocity.x;
-        float newYSpeed = newVelocity.y;
-
-        // We only want to update the booleans if the new velocity is not zero. The player should maintain the current animation otherwise
-        if (newXSpeed != 0f && newYSpeed != 0f)
+        if (kb.wKey.IsPressed())
         {
-            bool posXSpeed = newXSpeed > 0;
-            bool posYSpeed = newYSpeed > 0;
-            bool xSpeedGreaterThanY = Mathf.Abs(newXSpeed) > Mathf.Abs(newYSpeed);
-
-            //logNewAnimationBools(posXSpeed, posYSpeed, xSpeedGreaterThanY);
-            //logAnimatorBools();
-
-            animator.SetBool("PosXDir", posXSpeed);
-            animator.SetBool("PosYDir", posYSpeed);
-            animator.SetBool("GreaterXSpeed", xSpeedGreaterThanY);
+            return (speed * 1);
+        }
+        else if (kb.sKey.IsPressed())
+        {
+            return (speed * -1);
         }
 
+        return 0f;
     }
 
-    private static void logNewAnimationBools(bool posXSpeed, bool posYSpeed, bool xSpeedGreaterThanY)
+    private float GetXKeyDown()
     {
+        if (kb.dKey.IsPressed())
+        {
+            return (speed * 1);
+        }
+        else if (kb.aKey.IsPressed())
+        {
+            return (speed * -1);
+        }
 
-        // For checking what the various bools we're about to set are
-        Debug.Log("posXSpeed: " + posXSpeed + "\n" +
-            "posYSpeed: " + posYSpeed + "\n" +
-            "xSpeedGreaterThanY: " + xSpeedGreaterThanY);
+        return 0f;
     }
 
-    private void logAnimatorBools()
+    private void CheckSprintKey()
     {
-        // For checking whether the animator updated the variables or not
-        bool animatorXDir = animator.GetBool("PosXDir");
-        bool animatorYDir = animator.GetBool("PosYDir");
-        bool animatorXGreater = animator.GetBool("GreaterXSpeed");
-        Debug.Log("PosXDir: " + animatorXDir + "\n" +
-            "PosYDir: " + animatorYDir + "\n" +
-            "GreaterXSpeed: " + animatorXGreater + "\n");
+        if (kb.spaceKey.IsPressed())
+        {
+            maxMagnitude = calculatedSprintMagnitude;
+        }
+        else
+        {
+            maxMagnitude = originalMaxMagnitude;
+        }
     }
 
     private void ShowFloatingText()

@@ -192,9 +192,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 7
   maxMagnitude: 1
+  raveMemberCount: 1
+  maxRaveMemberCount: 4
   sprintMagnitudeMultiplier: 1.3
-  maxRaversPerBoat: 3
-  raveMemberCount: 0
   timeBetweenActionsUpperBound: 0
   timeBetweenActionsLowerBound: 0
   timeBetweenActions: 1.5
