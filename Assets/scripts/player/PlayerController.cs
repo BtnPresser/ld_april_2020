@@ -72,8 +72,6 @@ public class PlayerController : AbsBoatMovementController
                 }
             }
 
-
-
         } else if (collision.gameObject.CompareTag("Lighthouse"))
         {
             if (raveMemberCount > 0)
@@ -107,7 +105,6 @@ public class PlayerController : AbsBoatMovementController
         else/* if (!newForce.Equals(Vector2.zero))*/
         {
             AddForceToRigidBody(newForce, gameObjectBody);
-            Debug.Log("Player Velocity is now: " + gameObjectBody.velocity);
         }
     }
 

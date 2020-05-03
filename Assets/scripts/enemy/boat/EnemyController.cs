@@ -68,6 +68,8 @@ public class EnemyController : AbsBoatMovementController
         }
     }
 
+    // Need to figure out how this is used here
+    // Should we make the more complex AI boats inherit from another interface?
     protected override void MoveGameObjectRigidBody(Rigidbody2D gameObjectBody)
     {
 
