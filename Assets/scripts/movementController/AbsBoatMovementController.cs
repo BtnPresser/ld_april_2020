@@ -62,10 +62,10 @@ public abstract class AbsBoatMovementController : MonoBehaviour
         float newYSpeed = newVelocity.y;
 
         // We only want to update the booleans if the new velocity is not zero. The player should maintain the current animation otherwise
-        if (newXSpeed != 0f && newYSpeed != 0f)
+        if (newXSpeed > Mathf.Epsilon || newXSpeed < Mathf.Epsilon || newYSpeed > Mathf.Epsilon || newYSpeed < Mathf.Epsilon)
         {
-            bool posXSpeed = newXSpeed > 0;
-            bool posYSpeed = newYSpeed > 0;
+            bool posXSpeed = newXSpeed > Mathf.Epsilon;
+            bool posYSpeed = newYSpeed > Mathf.Epsilon;
             bool xSpeedGreaterThanY = Mathf.Abs(newXSpeed) > Mathf.Abs(newYSpeed);
 
             //logNewAnimationBools(posXSpeed, posYSpeed, xSpeedGreaterThanY);

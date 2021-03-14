@@ -11,7 +11,7 @@ public class SmoothCameraFollow : MonoBehaviour
     private Vector3 velocity;
 
     [Range(-15f, -1000f)]
-    public float cameraDistance = -20f;
+    public float cameraDistance = -80f;
 
     private void Awake()
     {
