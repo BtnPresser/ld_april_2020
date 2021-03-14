@@ -1,6 +1,8 @@
-﻿using TMPro;
+﻿using System.Transactions;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.PlayerLoop;
 
 public class PlayerController : AbsBoatMovementController
 {
@@ -12,6 +14,8 @@ public class PlayerController : AbsBoatMovementController
     public float sprintMagnitudeMultiplier = 1.5f;
     
     private float originalMaxMagnitude;
+    private bool newRaveMemberPickedUp = false;
+    private bool droppingOffRaveMembers = false;
 
     // Setup the Player
     private void Awake()
@@ -30,6 +34,20 @@ public class PlayerController : AbsBoatMovementController
 
         originalMaxMagnitude = maxMagnitude;
         calculatedSprintMagnitude = maxMagnitude * sprintMagnitudeMultiplier;
+    }
+
+    public override void Update()
+    {
+           base.Update();
+           if (newRaveMemberPickedUp)
+           {
+               ShowRaveMemberPickupText();
+           }
+
+           if (droppingOffRaveMembers)
+           {
+               DropOffRaveMembers();
+           }
     }
 
     public void FixedUpdate()
@@ -61,14 +79,14 @@ public class PlayerController : AbsBoatMovementController
 
                     raveBoatController.raveMemberCount = raveBoatMemberCount - maxRaversPlayerCanAcquire;
                     Debug.Log("Picked up " + raveBoatMemberCount + " Rave Member(s)!");
-                    ShowFloatingText();
+                    newRaveMemberPickedUp = true;
                 }
                 else
                 {
                     raveMemberCount += raveBoatMemberCount;
                     collision.gameObject.SetActive(false); // Set to inactive so the Pool can respawn this
                     Debug.Log("Picked up " + raveBoatMemberCount + " Rave Member(s)!");
-                    ShowFloatingText();
+                    newRaveMemberPickedUp = true;
                 }
             }
 
@@ -79,8 +97,7 @@ public class PlayerController : AbsBoatMovementController
                 // Do something similar to the above so that a lighthouse has a limit of Rave members they need to keep going
                 int lightHouseRaveMemberCount = collision.gameObject.GetComponent<LightHouseController>().raveMemberCount += raveMemberCount;
                 Debug.Log("Dropping off " + raveMemberCount + " Rave Members at lighthouse! \n" + "This LightHouse now has " + lightHouseRaveMemberCount + " Rave Member(s)");
-                ShowFloatingText("-" + raveMemberCount.ToString());
-                raveMemberCount = 0;
+                droppingOffRaveMembers = true;
             }
 
         }
@@ -148,9 +165,22 @@ public class PlayerController : AbsBoatMovementController
         }
     }
 
-    private void ShowFloatingText()
+    private void DropOffRaveMembers()
     {
+        ShowRaveMemberDroppedOffText();
+        raveMemberCount = 0;
+        droppingOffRaveMembers = false;
+    }
+
+    private void ShowRaveMemberPickupText()
+    {
+        newRaveMemberPickedUp = false;
         ShowFloatingText(raveMemberCount + "/10");
+    }
+
+    private void ShowRaveMemberDroppedOffText()
+    {
+        ShowFloatingText("-" + raveMemberCount);
     }
 
     private void ShowFloatingText(string textToShow)
@@ -159,7 +189,9 @@ public class PlayerController : AbsBoatMovementController
         go.GetComponent<TextMeshPro>().text = textToShow;
     }
 
+
     //private void OnEnable()
+
     //{
     //    controls.Enable();
     //}
