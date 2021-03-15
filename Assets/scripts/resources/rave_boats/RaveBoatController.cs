@@ -56,12 +56,6 @@ public class RaveBoatController : AbsBoatMovementController
         TookAction();
     }
 
-    protected override void AddForceToRigidBody(Vector3 newForce, Rigidbody2D gameObjectRigidBody)
-    {
-        base.AddForceToRigidBody(newForce, gameObjectRigidBody);
-        DampenRigidBodyVelocity(gameObjectRigidBody);
-    }
-
     private bool CanMakeAction()
     {
         timeSinceLastAction += Time.deltaTime;

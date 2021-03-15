@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public abstract class AbsBoatMovementController : MonoBehaviour
 {
     protected Rigidbody2D gameObjectRigidBody;
     protected Animator animator;
+    protected float calculatedMaxMagnitude;
 
     [Range(0.01f, 20f)]
     public float speed = 10f;
@@ -15,6 +17,11 @@ public abstract class AbsBoatMovementController : MonoBehaviour
 
     [Min(1)]
     public int maxRaveMemberCount = 3;
+
+    private void Awake()
+    {
+        calculatedMaxMagnitude = maxMagnitude;
+    }
 
     protected abstract void MoveGameObjectRigidBody(Rigidbody2D gameObjectBody);
 
@@ -34,25 +41,32 @@ public abstract class AbsBoatMovementController : MonoBehaviour
     protected virtual void AddForceToRigidBody(Vector2 newForce, Rigidbody2D gameObjectRigidBody)
     {
         gameObjectRigidBody.AddForce(newForce);
+        if (exceedMaxMagnitude(gameObjectRigidBody))
+        {
+            DampenRigidBodyVelocity(gameObjectRigidBody);
+        }
     }
 
     protected virtual void AddForceToRigidBody(Vector3 newForce, Rigidbody2D gameObjectRigidBody)
     {
         gameObjectRigidBody.AddForce(newForce);
+        if (exceedMaxMagnitude(gameObjectRigidBody))
+        {
+            DampenRigidBodyVelocity(gameObjectRigidBody);    
+        }
     }
 
-    protected void DampenRigidBodyVelocity(Rigidbody2D gameObjectRigidBody)
+    private void DampenRigidBodyVelocity(Rigidbody2D gameObjectRigidBody)
     {
         Vector2 velocity = gameObjectRigidBody.velocity;
         float magnitude = velocity.magnitude;
-        float exceedMaagnitudeAmount = maxMagnitude - magnitude;
 
         gameObjectRigidBody.AddForce(velocity * -1 * magnitude);
     }
 
     protected bool exceedMaxMagnitude(Rigidbody2D gameObjectRigidBody)
     {
-        return gameObjectRigidBody.velocity.magnitude > maxMagnitude;
+        return gameObjectRigidBody.velocity.magnitude > calculatedMaxMagnitude;
     }
 
     protected void UpdateAnimationBasedOnSpeed(Animator animator, Rigidbody2D gameObjectRigidBody)

@@ -108,11 +108,6 @@ public class EnemyController : AbsBoatMovementController
         {
             maxMagnitude = defaultMaxMagnitude;
         }*/
-
-        if (exceedMaxMagnitude(gameObjectBody))
-        {
-            DampenRigidBodyVelocity(gameObjectBody);
-        }
     }
 
 

@@ -10,10 +10,8 @@ public class PlayerController : AbsBoatMovementController
 
     private Keyboard kb;
 
-    private float calculatedSprintMagnitude;
     public float sprintMagnitudeMultiplier = 1.5f;
     
-    private float originalMaxMagnitude;
     private bool newRaveMemberPickedUp = false;
     private bool droppingOffRaveMembers = false;
 
@@ -30,10 +28,7 @@ public class PlayerController : AbsBoatMovementController
         raveMemberCount = 0;
         maxRaveMemberCount = 10;
 
-        maxMagnitude = 2f;
-
-        originalMaxMagnitude = maxMagnitude;
-        calculatedSprintMagnitude = maxMagnitude * sprintMagnitudeMultiplier;
+        maxMagnitude = 3.25f;
     }
 
     public override void Update()
@@ -115,14 +110,7 @@ public class PlayerController : AbsBoatMovementController
             "Current new force is: " + newForce);*/
         /*Debug.Log("New Force is: " + newForce);*/
 
-        if (exceedMaxMagnitude(gameObjectBody))
-        {
-            DampenRigidBodyVelocity(gameObjectBody);
-        }
-        else/* if (!newForce.Equals(Vector2.zero))*/
-        {
-            AddForceToRigidBody(newForce, gameObjectBody);
-        }
+        AddForceToRigidBody(newForce, gameObjectBody);
     }
 
     private float GetYKeyDown()
@@ -157,11 +145,11 @@ public class PlayerController : AbsBoatMovementController
     {
         if (kb.spaceKey.IsPressed())
         {
-            maxMagnitude = calculatedSprintMagnitude;
+            calculatedMaxMagnitude = maxMagnitude * sprintMagnitudeMultiplier;
         }
         else
         {
-            maxMagnitude = originalMaxMagnitude;
+            calculatedMaxMagnitude = maxMagnitude;
         }
     }
 

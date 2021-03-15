@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 10
-  maxMagnitude: 2
+  maxMagnitude: 3.25
   raveMemberCount: 0
   maxRaveMemberCount: 10
   floatingText: {fileID: 6239063179012161895, guid: d6b6b4092d4c7ee40b3458ccab414998,
